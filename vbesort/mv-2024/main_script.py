@@ -91,8 +91,10 @@ for page_num in range(1, len(pdf_document)):
     b_is_on_root = None  # Track if the root problem is a "B" problem
 
     for i, (problem_text, rect) in enumerate(problems):
-        rect = rect + (-10, -10, 10, 10)  # Slight adjustment for better screenshot area
-        pix = page.get_pixmap(clip=rect)
+        rect = rect + (-25, -8, 1000, 100)  # Slight adjustment for better screenshot area
+        zoom = 4  # This will double the resolution (you can adjust this as needed)
+        matrix = fitz.Matrix(zoom, zoom)  # Scaling the image by 2x in both directions
+        pix = page.get_pixmap(matrix=matrix, clip=rect)  # Apply the scaling while generating the pixmap
 
         if problem_text.endswith('.'):
             problem_text = problem_text[:-1]  # Remove the trailing period
