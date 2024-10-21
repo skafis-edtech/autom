@@ -1,9 +1,15 @@
-import fitz  # PyMuPDF
+import fitz
 import os
 import re
+from PIL import Image
+import numpy as np
 
 pdf_path = "input/2024k.pdf"
 output_dir = "output/"
+
+RIGHT_MARGIN_X = 580
+MARGIN_FROM_BOTTOM = 160
+ADD_TOP_MARGIN = 3
 
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
@@ -12,8 +18,18 @@ pdf_document = fitz.open(pdf_path)
 
 problem_pattern = re.compile(r"\b\d{2}\b")
 
-# Function to find text with specific font
-def extract_problem_text_in_font(page, font_name):
+def redact_word_in_pdf(pdf_document, word="Juodraštis"):
+    for page_num in range(len(pdf_document)):
+        page = pdf_document.load_page(page_num)
+        text_instances = page.search_for(word)
+
+        for inst in text_instances:
+            page.add_redact_annot(inst)
+            page.apply_redactions()
+
+    pdf_document.saveIncr()
+
+def extract_problem_number_in_font(page, font_name):
     text_instances = []
     blocks = page.get_text("dict")["blocks"]
     
@@ -28,8 +44,6 @@ def extract_problem_text_in_font(page, font_name):
                         text_instances.append((span["text"].strip(), fitz.Rect(span["bbox"])))
     return text_instances
 
-import re
-
 def check_for_b_before_problem(problem_number, text_with_fonts_file="output/text_with_fonts.txt"):
     if not os.path.isfile(text_with_fonts_file):
         print(f"The file {text_with_fonts_file} does not exist. You need to first run text_content_analysis.py script to generate this file.")
@@ -38,7 +52,7 @@ def check_for_b_before_problem(problem_number, text_with_fonts_file="output/text
     with open(text_with_fonts_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    problem_pattern = re.compile(rf"^{re.escape(problem_number)}\.?$")  # Match problem_number exactly, with optional period
+    problem_pattern = re.compile(rf"^{re.escape(problem_number)}\.?$")
 
     for i, line in enumerate(lines):
         match = re.match(r"(.*) \((.*)\)", line.strip())
@@ -46,26 +60,20 @@ def check_for_b_before_problem(problem_number, text_with_fonts_file="output/text
             text = match.group(1).strip()
             font = match.group(2).strip()
 
-            # Only consider problem numbers in "Arial-BoldMT" font
             if font != "Arial-BoldMT":
-                continue  # Skip lines where the font is not Arial-BoldMT
+                continue
 
-            # Check if the current line contains the problem number exactly
             if re.match(problem_pattern, text):
                 if i >= 2:
-                    # Get the line two lines before
                     prev_line = lines[i-2].strip()
                     prev_line_match = re.match(r"(.*) \((.*)\)", prev_line)
                     if prev_line_match:
                         prev_text = prev_line_match.group(1).strip()
                         prev_font = prev_line_match.group(2).strip()
 
-                        # Check if the previous text is exactly "B" and font is "Arial-BoldMT"
                         if prev_text == "B" and prev_font == "Arial-BoldMT":
-                            return True  # Exact match found
-                # Do not break; continue searching for other occurrences
-    return False  # If no matching occurrence found
-
+                            return True
+    return False 
 
 def has_subproblems(problem_number, text_with_fonts_file="output/text_with_fonts.txt"):
     if not os.path.isfile(text_with_fonts_file):
@@ -82,44 +90,97 @@ def has_subproblems(problem_number, text_with_fonts_file="output/text_with_fonts
                     return True
     return False
 
-# Iterate over each page in the PDF, starting from the second page (index 1)
+def check_non_white_content_on_all_sides(image_path, margin=10):
+    image = Image.open(image_path)
+    image_np = np.array(image.convert("L"))
+
+    top_margin = image_np[:margin, :]
+    bottom_margin = image_np[-margin:, :]
+    left_margin = image_np[:, :margin]
+    right_margin = image_np[:, -margin:]
+
+    if np.min(top_margin) < 240:
+        print(f"Warning: Non-white content found in the top {margin}px of {image_path}")
+    if np.min(bottom_margin) < 240:
+        print(f"Warning: Non-white content found in the bottom {margin}px of {image_path}")
+    if np.min(left_margin) < 240:
+        print(f"Warning: Non-white content found in the left {margin}px of {image_path}")
+    if np.min(right_margin) < 240:
+        print(f"Warning: Non-white content found in the right {margin}px of {image_path}")
+
+def remove_bottom_whitespace(image_path):
+    image = Image.open(image_path)
+    image_np = np.array(image.convert("L"))
+
+    non_white_rows = np.where(np.min(image_np, axis=1) < 240)[0]
+
+    if non_white_rows.size > 0:
+        bottom_row = non_white_rows[-1]
+
+        cropped_image = image.crop((0, 0, image.width, bottom_row + 6))
+        cropped_image.save(image_path)
+
+    check_non_white_content_on_all_sides(image_path, margin=2)
+
+# ============================================= CODE STARTS HERE ================================================
+
+redact_word_in_pdf(pdf_document)
+
 for page_num in range(1, len(pdf_document)): 
     page = pdf_document.load_page(page_num) 
     
-    problems = extract_problem_text_in_font(page, "Arial-BoldMT")
-    
-    b_is_on_root = None  # Track if the root problem is a "B" problem
+    problems = extract_problem_number_in_font(page, "Arial-BoldMT")
 
-    for i, (problem_text, rect) in enumerate(problems):
-        rect = rect + (-25, -8, 1000, 100)  # Slight adjustment for better screenshot area
-        zoom = 4  # This will double the resolution (you can adjust this as needed)
-        matrix = fitz.Matrix(zoom, zoom)  # Scaling the image by 2x in both directions
-        pix = page.get_pixmap(matrix=matrix, clip=rect)  # Apply the scaling while generating the pixmap
+    print("Page", page_num, ":", len(problems), "problems found")
+    for i in range(len(problems)):
+        print(problems[i][0], round(problems[i][1].y0, 2))
+    print()
 
-        if problem_text.endswith('.'):
-            problem_text = problem_text[:-1]  # Remove the trailing period
+    b_is_on_root = None 
 
-        # Check if the problem is a "B" problem
-        if check_for_b_before_problem(problem_text):
-            print(f"Found a 'B' problem: {problem_text}")
-            if '.' in problem_text: 
-                problem_text = f"{problem_text}B" 
+    for i, (problem_number, rect) in enumerate(problems):
+
+        if problem_number.endswith('.'):
+            problem_number = problem_number[:-1]
+
+        x1, y1, x2, y2 = rect
+
+        if check_for_b_before_problem(problem_number):
+            if '.' in problem_number: 
+                problem_number = f"s{problem_number}B" 
             else: 
-                if has_subproblems(problem_text):  
-                    b_is_on_root = problem_text 
+                if has_subproblems(problem_number):  
+                    b_is_on_root = problem_number 
+                    problem_number = f"r{problem_number}" 
                 else:
-                    problem_text = f"{problem_text}B"
-                    b_is_on_root = problem_text
+                    problem_number = f"w{problem_number}B"
+                    b_is_on_root = problem_number
+            x1 -= 25
         else: 
-            if b_is_on_root and b_is_on_root == problem_text.split('.')[0]:
-                problem_text = f"{problem_text}B"
+            if b_is_on_root and b_is_on_root == problem_number.split('.')[0]:
+                problem_number = f"s{problem_number}B"
             else:
                 b_is_on_root = None
+                if '.' in problem_number:
+                    problem_number = f"s{problem_number}"
+                elif has_subproblems(problem_number):
+                    problem_number = f"r{problem_number}"
+                else:
+                    problem_number = f"w{problem_number}"
+            x1 -= 10
 
-        # Save the image with the appropriate name
-        output_image_path = os.path.join(output_dir, f"{problem_text}.png")
+        y1 -= ADD_TOP_MARGIN
+        x2 = RIGHT_MARGIN_X
+        y2 = problems[i+1][1].y0-ADD_TOP_MARGIN if i+1 < len(problems) else page.rect.y1 - MARGIN_FROM_BOTTOM
+
+        zoom = 4  
+        matrix = fitz.Matrix(zoom, zoom) 
+        pix = page.get_pixmap(matrix=matrix, clip=(x1, y1, x2, y2)) 
+
+        output_image_path = os.path.join(output_dir, f"{problem_number}.png")
         pix.save(output_image_path)
-# Close the PDF after processing
-pdf_document.close()
 
+        remove_bottom_whitespace(output_image_path)
+
+pdf_document.close()
 print(f"All problems in font 'Arial-BoldMT' have been extracted and saved as individual images in {output_dir}")
