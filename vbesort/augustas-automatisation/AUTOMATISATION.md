@@ -1,5 +1,7 @@
 # Automatisation
 
+SPECIAL THANKS TO AUGUSTAS!
+
 Aprašymas kaip naudotis python scripts klausimų generavimui, mano kompiuteriu sugeneruoti 13 egzaminų užduotis užtrunka apie 3.5 minutės.
 
 Automatisation folderyje yra du failai, gen_questions.py ir parse.py

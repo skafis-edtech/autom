@@ -1,4 +1,4 @@
-# Screenshot generation from PDFs
+# Screenshot generation from PDFs NMPP
 
 gen_questions.py generates problem question screenshots.
 
@@ -34,8 +34,8 @@ Tiesiog reikia paleisti "gen_questions.py" ir jis sugeneruos klausimus į final 
 
 Labai rekomenduoju greitai peržiūrėti rezultatą, jei klausimas yra per du puslapius jis nesuveikia, ir šiap kartais būna random klaidų
 
-
 ### NMPP 8
+
 pix inspection:
 
 ![](./px-inspection-m8.png)
