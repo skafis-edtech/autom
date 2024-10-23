@@ -2,7 +2,7 @@ import fitz  # PyMuPDF
 import os
 
 # Define input PDF file and output text file
-pdf_path = "input/2024k.pdf"
+pdf_path = "input/2023V.pdf"
 output_dir = "output/"
 output_txt = "output/text_with_fonts.txt"
 

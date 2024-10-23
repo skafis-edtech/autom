@@ -4,8 +4,9 @@ import re
 from PIL import Image
 import numpy as np
 
-pdf_path = "input/2024k.pdf"
+pdf_path = "input/2023V.pdf"
 output_dir = "output/"
+NUMBERS_FONT="Arial,Bold"
 
 RIGHT_MARGIN_X = 580
 MARGIN_FROM_BOTTOM = 160
@@ -16,7 +17,8 @@ if not os.path.exists(output_dir):
 
 pdf_document = fitz.open(pdf_path)
 
-problem_pattern = re.compile(r"\b\d{2}\b")
+# Changed for the new example problems 2024 II part example
+problem_pattern = re.compile(r"\b\d{1,2}\b") # original pattern: re.compile(r"\b\d{1,2}\b")
 
 def redact_word_in_pdf(pdf_document, word="Juodraštis"):
     for page_num in range(len(pdf_document)):
@@ -126,10 +128,10 @@ def remove_bottom_whitespace(image_path):
 
 redact_word_in_pdf(pdf_document)
 
-for page_num in range(1, len(pdf_document)): 
+for page_num in range(0, len(pdf_document)): 
     page = pdf_document.load_page(page_num) 
     
-    problems = extract_problem_number_in_font(page, "Arial-BoldMT")
+    problems = extract_problem_number_in_font(page, NUMBERS_FONT)
 
     print("Page", page_num, ":", len(problems), "problems found")
     for i in range(len(problems)):
@@ -176,6 +178,11 @@ for page_num in range(1, len(pdf_document)):
         zoom = 4  
         matrix = fitz.Matrix(zoom, zoom) 
         pix = page.get_pixmap(matrix=matrix, clip=(x1, y1, x2, y2)) 
+
+        # Addition to the new example problems 2024 II part example
+        if sum(char.isdigit() for char in problem_number) == 1:
+            problem_number = re.sub(r'(\d)', r'0\1', problem_number)
+
 
         output_image_path = os.path.join(output_dir, f"{problem_number}.png")
         pix.save(output_image_path)

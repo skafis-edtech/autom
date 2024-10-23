@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Check if the correct number of arguments are provided
-if [ "$#" -ne 1 ]; then
-  echo "Usage: $0 <string_to_prepend>"
-  exit 1
-fi
+# if [ "$#" -ne 1 ]; then
+#   echo "Usage: $0 <string_to_prepend>"
+#   exit 1
+# fi
 
 # Assign command-line argument to variable
-PREFIX="$1"
+# PREFIX="$1"
+PREFIX="mv2024i-w"
 
 # Use the current working directory
 DIR="$(pwd)"

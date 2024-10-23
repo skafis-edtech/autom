@@ -6,6 +6,10 @@ This makes screenshots of problems specifically for 2024 pak. session math VBE.
 
 pip install pymupdf
 
+pip install pillow
+
+pip install numpy
+
 ## Instructions
 
 1. Place 2024k.pdf VBE math file in input dir.
