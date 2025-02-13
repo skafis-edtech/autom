@@ -6,11 +6,12 @@ import numpy as np
 
 pdf_path = "input/2023V.pdf"
 output_dir = "output/"
-NUMBERS_FONT="Arial,Bold"
+NUMBERS_FONT="GlyphLessFont"
 
 RIGHT_MARGIN_X = 580
 MARGIN_FROM_BOTTOM = 160
 ADD_TOP_MARGIN = 3
+FIRST_PAGE = 6
 
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
@@ -128,7 +129,7 @@ def remove_bottom_whitespace(image_path):
 
 redact_word_in_pdf(pdf_document)
 
-for page_num in range(0, len(pdf_document)): 
+for page_num in range(FIRST_PAGE, len(pdf_document)): 
     page = pdf_document.load_page(page_num) 
     
     problems = extract_problem_number_in_font(page, NUMBERS_FONT)
@@ -173,10 +174,18 @@ for page_num in range(0, len(pdf_document)):
 
         y1 -= ADD_TOP_MARGIN
         x2 = RIGHT_MARGIN_X
-        y2 = problems[i+1][1].y0-ADD_TOP_MARGIN if i+1 < len(problems) else page.rect.y1 - MARGIN_FROM_BOTTOM
+        y2 = problems[i+1][1].y0 - ADD_TOP_MARGIN if i+1 < len(problems) else min(page.rect.y1 - MARGIN_FROM_BOTTOM, y1 + 50)
 
         zoom = 4  
-        matrix = fitz.Matrix(zoom, zoom) 
+        matrix = fitz.Matrix(zoom, zoom)
+
+        # DEBUGGING
+        print(f"Clipping coords: x1={x1}, y1={y1}, x2={x2}, y2={y2}")
+        if x2 <= x1 or y2 <= y1:
+            print(f"Skipping invalid region: {x1}, {y1}, {x2}, {y2}")
+            continue  # Skip this iteration to avoid a crash
+        # DEBUGGING END
+
         pix = page.get_pixmap(matrix=matrix, clip=(x1, y1, x2, y2)) 
 
         # Addition to the new example problems 2024 II part example

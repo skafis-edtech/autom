@@ -1,10 +1,13 @@
-# Automatization scripts for uploading problems to bankas.skafis.lt
+# Automatization scripts for uploading problems to vbesort and bankas.skafis
+
+> Checkout `/vbesort` and `BANKAS_V4` folders for more detailed descriptions.
 
 Used python packages:
 
 - pdf2image: pip install pdf2image
 - opencv-python: pip install opencv-python
 - Pillow: pip install Pillow
+- cv: pip install opencv-python
 
 ## List of automatisations
 
