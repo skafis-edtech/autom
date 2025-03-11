@@ -3,10 +3,10 @@ import numpy as np
 import os
 import re
 
-#665 out of 625 accuracy
+# 665 out of 625 accuracy
 
 # === CONFIGURATION ===
-INPUT_DIR = "/home/home/Desktop/PLAYGROUND/autom/BANKAS_V4/temp/"
+INPUT_DIR = "temp/"
 OUTPUT_DIR = "output/"
 
 # Defines the vertical strip where problem numbers are located
