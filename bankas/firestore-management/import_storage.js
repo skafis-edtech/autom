@@ -38,10 +38,14 @@ async function uploadFolder(folderName) {
     const localFilePath = path.join(localFolderPath, file);
     const storageFilePath = `${folderName}/${file}`;
 
+    const metadata = {
+      contentType: `image/${file.split(".").pop()}`,
+    };
+
     try {
       await storage.upload(localFilePath, {
         destination: storageFilePath,
-        public: true, // Set to true if you want public URLs
+        metadata: metadata,
       });
       console.log(`Uploaded ${file} to ${storageFilePath}`);
     } catch (error) {
