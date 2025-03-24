@@ -50,6 +50,8 @@ Amends, doesn't delete existing.
 
 All output stored in `output/` folder.
 
-```
+### Other
 
-```
+`node get_problem_categories_convenient`
+
+Takes `problem.json` and `categories.json` files and creates `problems-categories.json` file with problem texts and category names assigned for problems.

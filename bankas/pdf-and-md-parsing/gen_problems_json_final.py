@@ -27,7 +27,7 @@ def parse_md(md_file):
 
         # Replace single newlines with double newlines & fix Lithuanian chars
         formatted_text = section_text.replace("\n", "\n\n").strip()
-        formatted_text = formatted_text.replace("é", "ė").replace("è", "ė").replace("ê", "ė").replace("ë", "ė").replace("ē", "ė").replace("ì", "į").replace("í", "į")
+        formatted_text = formatted_text.replace("é", "ė").replace("è", "ė").replace("ê", "ė").replace("ë", "ė").replace("ē", "ė").replace("ì", "į").replace("í", "į").replace("ị", "į").replace("ě", "ė").replace("İ", "Į").replace("ị", "į").replace("ị", "į").replace("ì", "į").replace("ě", "ė").replace("è", "ė").replace("é", "ė").replace("ụ", "ė")
 
         entries[problem_number] = formatted_text  # Store as dictionary {problem_number: text}
 
