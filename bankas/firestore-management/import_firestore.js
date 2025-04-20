@@ -14,7 +14,17 @@ admin.initializeApp({
 
 const db = admin.firestore(); // ✅ Now initialized before calling importCollection()
 
-const validCollections = ["categories", "problems", "users", "sources", "meta"];
+const validCollections = [
+  "categories",
+  "problems",
+  "users",
+  "sources",
+  "meta",
+  "testai2_executions",
+  "testai2_gradings",
+  "testai2_templates",
+  "testai2_takes",
+];
 const args = process.argv.slice(2);
 
 async function importCollection(collection, filePath) {

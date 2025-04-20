@@ -55,3 +55,7 @@ All output stored in `output/` folder.
 `node get_problem_categories_convenient`
 
 Takes `problem.json` and `categories.json` files and creates `problems-categories.json` file with problem texts and category names assigned for problems.
+
+`node get_categories_list_txt.js`
+
+Makes categories.txt from categories.json

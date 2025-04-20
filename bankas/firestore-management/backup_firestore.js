@@ -36,7 +36,17 @@ async function backupCollection(collectionName) {
   console.log(`Backup of ${collectionName} completed successfully.`);
 }
 
-const validCollections = ["categories", "problems", "users", "sources", "meta"];
+const validCollections = [
+  "categories",
+  "problems",
+  "users",
+  "sources",
+  "meta",
+  "testai2_executions",
+  "testai2_gradings",
+  "testai2_templates",
+  "testai2_takes",
+];
 
 const args = process.argv.slice(2); // Skip the first two arguments (node and script name)
 
